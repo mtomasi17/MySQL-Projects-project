@@ -1,0 +1,1 @@
+"# mySQLWeek7Exercises" 
