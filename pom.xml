@@ -10,7 +10,7 @@
 	<groupId>com.promineotech</groupId>
 	<artifactId>mysql-java-project</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-<!-- comment -->
+
 	<dependencies>
 		<dependency>
 			<groupId>com.mysql</groupId>
@@ -35,3 +35,6 @@
 		</pluginManagement>
 	</build>
 </project>
+
+<!-- This POM file sets up a Maven project for a Java application that depends on 
+the MySQL Connector/J library and specifies the Java version compatibility as 17. -->
