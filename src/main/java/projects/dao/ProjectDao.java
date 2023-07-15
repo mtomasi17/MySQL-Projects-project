@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -89,7 +88,9 @@ public class ProjectDao extends DaoBase {
 			throw new DbException(e);
 		}
 	}
-
+/* This method performs a database query to retrieve all projects from a table, maps the retrieved 
+ * data to Project objects, and returns a list of the fetched projects.
+ */
 	public List<Project> fetchAllProjects() {
 		String sql = "SELECT * FROM " + PROJECT_TABLE + " ORDER BY project_name";
 		
@@ -115,7 +116,9 @@ public class ProjectDao extends DaoBase {
 			throw new DbException(e);
 		}
 	}
-
+/* This method performs a database query to retrieve a project by its ID, maps the retrieved
+ * data to a Project object, and returns it wrapped in an Optional
+ */
 	public Optional<Project> fetchProjectById(Integer projectId) {
 		String sql = "SELECT * FROM " + PROJECT_TABLE + " WHERE project_id = ?";
 		
@@ -156,6 +159,9 @@ public class ProjectDao extends DaoBase {
 		}
 	}
 
+	/* This method performs a database query to retrieve the categories associated with a specific project. It maps the 
+	 * retrieved data to Category objects and returns a list of the fetched categories.
+	 */
 	private List<Category> fetchCategoriesForProject(Connection conn, Integer projectId) throws SQLException {
 		// @formatter:off
 		String sql = ""
@@ -177,7 +183,9 @@ public class ProjectDao extends DaoBase {
 			}	
 		}
 	}
-
+/*  This method performs a database query to retrieve the steps associated with a specific project. It maps 
+ *  the retrieved data to Step objects and returns a list of the fetched steps.
+ */
 	private List<Step> fetchStepsForProject(Connection conn, Integer projectId) throws SQLException {
 		String sql = "SELECT * FROM " + STEP_TABLE + " WHERE project_id = ?";
 		
@@ -194,7 +202,9 @@ public class ProjectDao extends DaoBase {
 			}
 		}
 	}
-
+/* this method performs a database query to retrieve the materials associated with a specific project. It maps the 
+ * retrieved data to Material objects and returns a list of the fetched materials.
+ */
 	private List<Material> fetchMaterialsForProject(Connection conn, Integer projectId) throws SQLException {
 		String sql = "SELECT * FROM " + MATERIAL_TABLE + " WHERE project_id = ?";
 		
@@ -209,6 +219,84 @@ public class ProjectDao extends DaoBase {
 				}
 				return materials;
 			}
+		}
+	}
+	
+	/*
+	 * the modifyProjectDetails() method executes an SQL update statement to modify the 
+	 * project details in the database. It handles transaction management and returns a 
+	 * boolean value indicating the success of the modification.
+	 */
+	
+	public boolean modifyProjectDetails(Project project) {
+		// @formatter:off
+		String sql = ""
+				+ "UPDATE " + PROJECT_TABLE + " SET "
+				+ "project_name = ?, "
+				+ "estimated_hours = ?, "
+				+ "actual_hours = ?, "
+				+ "difficulty = ?, "
+				+ "notes = ? "
+				+ "WHERE project_id = ?";
+		// @formatter:on
+		
+		try(Connection conn = DbConnection.getConnection()){
+			startTransaction(conn);
+			
+			try(PreparedStatement stmt = conn.prepareStatement(sql)){
+				setParameter(stmt, 1, project.getProjectName(), String.class);
+				setParameter(stmt, 2, project.getEstimatedHours(), BigDecimal.class);
+				setParameter(stmt, 3, project.getActualHours(), BigDecimal.class);
+				setParameter(stmt, 4, project.getDifficulty(), Integer.class);
+				setParameter(stmt, 5, project.getNotes(), String.class);
+				setParameter(stmt, 6, project.getProjectId(), Integer.class);
+				
+				boolean modified = stmt.executeUpdate() == 1;
+				commitTransaction(conn);
+				
+				return modified;
+				
+			}
+			catch(Exception e) {
+				rollbackTransaction(conn);
+				throw new DbException(e);
+			}
+			
+			
+		} 
+		catch (SQLException e) {
+			throw new DbException(e);
+		}
+		
+	}
+	
+	/*
+	 *  the deleteProject() method executes an SQL delete statement to remove a project 
+	 *  from the database based on its ID. It handles transaction management and returns 
+	 *  a boolean value indicating the success of the deletion.
+	 */
+	
+	public boolean deleteProject(Integer projectId) {
+		String sql = "DELETE FROM " + PROJECT_TABLE + " WHERE project_id = ?";
+		
+		try(Connection conn = DbConnection.getConnection()){
+			startTransaction(conn);
+			
+			try(PreparedStatement stmt = conn.prepareStatement(sql)){
+				setParameter(stmt, 1, projectId, Integer.class);
+				
+				boolean deleted = stmt.executeUpdate() == 1;
+				
+				commitTransaction(conn);
+				return deleted;
+			}
+			catch(Exception e) {
+				rollbackTransaction(conn);
+				throw new DbException(e);
+			}
+						
+		} catch (SQLException e) {
+			throw new DbException(e);
 		}
 	}
 
